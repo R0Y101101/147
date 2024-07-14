@@ -111,3 +111,121 @@ for index,gravity in enumerate(planet_gravity):
   if gravity < 100:
     low_gravity_planets.append(planet_data_rows[index])
 print(len(low_gravity_planets))
+print(headers)
+
+#TYpes of planets
+planet_type_values = []
+for planet_data in planet_data_rows:
+  planet_type_values.append(planet_data[6])
+
+
+print(list(set(planet_type_values)))
+
+planet_masses = []
+planet_radiuses = []
+
+for planet_data in low_gravity_planets:
+  planet_masses.append(planet_data[3])
+  planet_radiuses.append(planet_data[7])
+
+fig = px.scatter(x=planet_radiuses, y=planet_masses)
+fig.show()
+
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+X = []
+for index, planet_mass in enumerate(planet_masses):
+ temp_list = [
+                 planet_radiuses[index],
+                 planet_mass
+             ]
+ X.append(temp_list)
+
+
+wcss = []
+for i in range(1, 11):
+   kmeans = KMeans(n_clusters=i, init='k-means++', random_state = 42)
+   kmeans.fit(X)
+   # inertia method returns wcss for that model
+   wcss.append(kmeans.inertia_)
+
+
+plt.figure(figsize=(10,5))
+sns.lineplot(x=range(1, 11), y=wcss, marker='o', color='red')
+plt.title('The Elbow Method')
+plt.xlabel('Number of clusters')
+plt.ylabel('WCSS')
+plt.show()
+
+
+planet_masses = []
+planet_radiuses = []
+planet_types = []
+for planet_data in low_gravity_planets:
+ planet_masses.append(planet_data[3])
+ planet_radiuses.append(planet_data[7])
+ planet_types.append(planet_data[6])
+
+
+fig = px.scatter(x=planet_radiuses, y=planet_masses, color=planet_types)
+fig.show()
+
+suitable_planets = []
+for planet_data in low_gravity_planets:
+ if planet_data[6].lower() == "terrestrial" or planet_data[6].lower() == "super earth":
+   suitable_planets.append(planet_data)
+
+print(len(suitable_planets))
+
+temp_suitable_planets = list(suitable_planets)
+for planet_data in temp_suitable_planets:
+  if planet_data[8].lower() == "unknown":
+    suitable_planets.remove(planet_data)
+
+for planet_data in suitable_planets:
+  if planet_data[9].split(" ")[1].lower() == "days":
+    planet_data[9] = float(planet_data[9].split(" ")[0]) #Days
+  else:
+    planet_data[9] = float(planet_data[9].split(" ")[0])*365 #Years
+  planet_data[8] = float(planet_data[8].split(" ")[0])
+
+orbital_radiuses = []
+orbital_periods = []
+for planet_data in suitable_planets:
+  orbital_radiuses.append(planet_data[8])
+  orbital_periods.append(planet_data[9])
+
+fig = px.scatter(x=orbital_radiuses, y=orbital_periods)
+fig.show()
+
+goldilock_planets = list(suitable_planets) #We will leave suitable planet list as it is
+
+temp_goldilock_planets = list(suitable_planets) 
+for planet_data in temp_goldilock_planets:
+  if planet_data[8] < 0.38 or planet_data[8] > 2:
+    goldilock_planets.remove(planet_data)
+
+print(len(suitable_planets))
+print(len(goldilock_planets))
+
+planet_speeds = []
+for planet_data in suitable_planets:
+ distance = 2 * 3.14 * (planet_data[8] * 1.496e+9)
+ time = planet_data[9] * 86400
+ speed = distance / time
+ planet_speeds.append(speed)
+
+
+speed_supporting_planets = list(suitable_planets) #We will leave suitable planet list as it is
+
+
+temp_speed_supporting_planets = list(suitable_planets)
+for index, planet_data in enumerate(temp_speed_supporting_planets):
+ if planet_speeds[index] > 200:
+   speed_supporting_planets.remove(planet_data)
+
+
+print(len(speed_supporting_planets))
